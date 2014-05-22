@@ -58,9 +58,20 @@
                                 
                              %{ } }%
                         %{ } else { }%
-                        	#{if _caller.type.getField(field).name == 'gender'}
-                        		${object[field] == 0?'男':'女'}
+                        	#{if _caller.type.getField(field).name == 'os'}
+                        		${object[field] == 1?'Android':'IOS'}
                         	#{/if}
+                        	#{elseif _caller.type.getField(field).name == 'gender'}
+                        		${object[field] == 0?'男':'女'}
+                        	#{/elseif}
+                        	#{elseif _caller.type.getField(field).name == 'email'}
+                        		#{if object[field]?.length()>15}
+									${object[field]?.substring(0,15)+'...'}
+								#{/if}
+								#{else}
+									${object[field]}
+								#{/else}
+                        	#{/elseif}
                         	#{else}
                         		${object[field]?.escape()?.raw()}
                         	#{/else}

@@ -9,8 +9,12 @@ GET     /                                       Application.index
 *       /c/logout								Master.logout
 *       /c/updateCustomerInfo					Master.updateMemberInfo
 *       /c/getCustomerInfo						Master.getMemberInfo
+*       /c/getRecords							Master.getMemberRecords
+*       /c/setRecord							Master.setMemberRecord
 *       /c/download								Master.download
 *       /c/update								Master.update
+*       /c/resetpassword						Master.sendResetPasswordMail
+*       /c/getADs								Master.getPushInfos
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

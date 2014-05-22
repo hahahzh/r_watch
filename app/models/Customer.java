@@ -67,6 +67,14 @@ public class Customer extends Model {
 	@Email
 	public String email;
 	
+	public String city;
+	
+	public Date birthday;
+	
+	public String height;
+	
+	public String weight;
+	
 	public Blob portrait;
 	
 	public String toString() {

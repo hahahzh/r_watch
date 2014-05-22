@@ -10,15 +10,21 @@
     </div>
 
     <div id="crudListTable">
-        #{customer.table fields:['m_number', 'nickname', 'gender', 'email'] /}
+        #{customer.table fields:['m_number', 'nickname', 'gender', 'email', 'os', 'imei', 'imsi', 'mac', 'city', 'birthday', 'height', 'weight'] /}
     </div>
 
     <div id="crudListPagination">
         #{crud.pagination /}
     </div>
 
-    <p id="crudListAdd">
-        <a href="@{blank()}">&{'crud.add', type.modelName}</a>
-    </p>
 
+    <p>
+		<input type="button" id="ttff" name="tt" onclick="exportToExcel();" value="导出数据"/>
+	</p>
 </div>
+<script type="text/javascript">
+function exportToExcel(){
+	var search = document.getElementsByName("search")[0].value;
+	window.location.href = "/customers/exportAllData?search="+search+"&startDate=&endDate=";	
+}
+</script>

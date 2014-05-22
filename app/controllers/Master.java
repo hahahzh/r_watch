@@ -1,15 +1,25 @@
 package controllers;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+
+import javax.mail.internet.InternetAddress;
 
 import models.CheckDigit;
 import models.ClientVersion;
 import models.Customer;
+import models.HealthRecord;
+import models.Location;
+import models.Production;
+import models.PushInfo;
+import models.RWatch;
 import models.Session;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import play.Play;
 import play.cache.Cache;
 import play.data.validation.Required;
 import play.data.validation.Validation;
@@ -20,7 +30,9 @@ import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.Http.Header;
 import utils.Coder;
+import utils.DateUtil;
 import utils.JSONUtil;
+import utils.SendMail;
 import controllers.CRUD.ObjectType;
 
 /**
@@ -129,19 +141,20 @@ public class Master extends Controller {
 			String src = new String(b);
 			String[] arr = src.split("\\|");
 		
-			int i = Integer.parseInt(arr[7]);
-			CheckDigit c = CheckDigit.find("d=?", i).first();
-			if(c == null){
-				renderFail("error_checkdigit");
-			}
-			if(!c.m.equals(arr[6])){
-				renderFail("error_checkdigit");
-			}
-			if(new Date().getTime() - c.updatetime > 1800000){
-				c.delete();
-				renderFail("error_checkdigit");
-			}
-			c.delete();
+			//TODO 验证码
+//			int i = Integer.parseInt(arr[7]);
+//			CheckDigit c = CheckDigit.find("d=?", i).first();
+//			if(c == null){
+//				renderFail("error_checkdigit");
+//			}
+//			if(!c.m.equals(arr[6])){
+//				renderFail("error_checkdigit");
+//			}
+//			if(new Date().getTime() - c.updatetime > 1800000){
+//				c.delete();
+//				renderFail("error_checkdigit");
+//			}
+//			c.delete();
 
 			Customer m = Customer.find("byM_number", arr[6]).first();
 			if(m != null){
@@ -199,7 +212,7 @@ public class Master extends Controller {
 			renderFail("error_parameter_required");
 		}
 
-		if (os != null && os == 1 && (serialNumber == null || serialNumber.isEmpty())) {
+		if (os != null && os == 2 && (serialNumber == null || serialNumber.isEmpty())) {
 			renderFail("error_parameter_required");
 		}
 		Customer c = Customer.find("byM_number", phone).first();
@@ -250,72 +263,46 @@ public class Master extends Controller {
 		renderSuccess(initResultJSON());
 	}
 
-//	/**
-//	 * .............
-//	 * 
-//	 * @param username
-//	 * @param password
-//	 * @param sessionID
-//	 * @throws UnsupportedEncodingException
-//	 */
-//	@SuppressWarnings("deprecation")
-//	public static void sendResetPasswordMail(@Required String userName)
-//			throws UnsupportedEncodingException {
-//		Document doc = initResultJSON();
-//		// ....
-//		if (Validation.hasErrors()) {
-//			renderFail("error_parameter_required", doc,
-//					error_parameter_required);
-//		}
-//
-//		// .......
-//		Member member = Member.find("byUsername", userName).first();
-//		if (member == null) {
-//			renderFail("error_username_not_exist", doc,
-//					error_username_not_exist);
-//		}
-//
-//		if(member.updateTime != null && (new Date().getDate() != member.updateTime.getDate())){
-//			member.sendPasswordCount = 1;
-//		}
-//		// ..........10.
-//		if(member.sendPasswordCount > 10){
-//			renderFail("error_send_mail_fail",doc,error_send_mail_fail);
-//		}
-//
-//		SendMail mail = new SendMail(
-//				Play.configuration.getProperty("mail.smtp.host"),
-//				Play.configuration.getProperty("mail.smtp.user"),
-//				Play.configuration.getProperty("mail.smtp.pass"));
-//
-//		mail.setSubject(Messages.get("mail_resetpassword_title"));
-//		mail.setBodyAsText(Messages.get("mail_resetpassword_content",
-//				member.username, member.username, member.password,
-//				DateUtil.toDate(new Date())));
-//
-//		// ..........
-//		String nick = Messages.get("mail_show_name");
-//		try {
-//			nick = javax.mail.internet.MimeUtility.encodeText(nick);
-//			mail.setFrom(new InternetAddress(nick + " <"
-//					+ Play.configuration.getProperty("mail.smtp.from") + ">")
-//					.toString());
-//			mail.setTo(member.email);
-//			mail.send();
-//			member.sendPasswordCount++;
-//			member.updateTime = new Date();
-//			member.save();
-//		} catch (Exception e) {
-//			renderFail("error_mail_resetpassword", doc,
-//					error_mail_resetpassword);
-//		}
-//		renderSuccess("mail_resetpassword_success", doc);
-//	}
-//
+
+	@SuppressWarnings("deprecation")
+	public static void sendResetPasswordMail(@Required String m)
+			throws UnsupportedEncodingException {
+
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+
+		Customer c = Customer.find("byM_number", m).first();
+		if (c == null) {
+			renderFail("error_username_not_exist");
+		}
+
+		SendMail mail = new SendMail(
+				Play.configuration.getProperty("mail.smtp.host"),
+				Play.configuration.getProperty("mail.smtp.user"),
+				Play.configuration.getProperty("mail.smtp.pass"));
+
+		mail.setSubject(Messages.get("mail_resetpassword_title"));
+		mail.setBodyAsText("电话："+c.m_number+" 密码："+c.pwd);
+
+		String nick = Messages.get("mail_show_name");
+		try {
+			nick = javax.mail.internet.MimeUtility.encodeText(nick);
+			mail.setFrom(new InternetAddress(nick + " <"
+					+ Play.configuration.getProperty("mail.smtp.from") + ">")
+					.toString());
+			mail.setTo(c.email);
+			mail.send();
+		} catch (Exception e) {
+			renderFail("error_mail_resetpassword");
+		}
+		renderSuccess(initResultJSON());
+	}
+
 
 	//更新用户信息
-	public static void updateMemberInfo(Integer os, String nickname, String pwd, String gender, String email,
-			Blob portrait, @Required String z) {
+	public static void updateMemberInfo(Integer os, String nickname, String pwd, String gender, String email, 
+			String city, Date birthday, String height, String weight, Blob portrait, @Required String z) {
 
 		// ....
 		if (Validation.hasErrors()) {
@@ -339,6 +326,18 @@ public class Master extends Controller {
 		}
 		if(gender != null){
 			c.gender = Byte.valueOf(gender);
+		}
+		if(city != null){
+			c.city = city;
+		}
+		if(birthday != null){
+			c.birthday = birthday;
+		}
+		if(height != null){
+			c.height = height;
+		}
+		if(weight != null){
+			c.weight = weight;
 		}
 		if(portrait != null){
 			if(c.portrait.exists()){
@@ -370,6 +369,10 @@ public class Master extends Controller {
 		results.put("email", c.email);
 		results.put("os", c.os+"");
 		results.put("gender", c.gender+"");
+		results.put("city", c.city);
+		results.put("height", c.height);
+		results.put("weight", c.weight);
+		results.put("birthday", DateUtil.reverseDate(c.birthday,1));
 		
 		if(c.portrait != null && c.portrait.exists()){
 			results.put("portrait", "/c/download?id=" + c.id + "&fileID=portrait&entity=" + c.getClass().getName() + "&z=" + z);
@@ -380,6 +383,241 @@ public class Master extends Controller {
 				results.put("portrait", "/public/images/girl.jpg");
 			}
 		}
+		renderSuccess(results);
+	}
+	
+	public static void setMemberRecord(Integer actualstep, Integer targetstep, String km, String calories, Date sleeptime, Date waketime, Integer wakenum, Float lightsleep, Float deepsleep, @Required String z) {
+		
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		
+		Session s = sessionCache.get();
+		if(s == null){
+			renderFail("error_session_expired");
+		}
+
+		HealthRecord hr = new HealthRecord();
+		hr.c = s.c;
+		if(actualstep != null){
+			hr.actualstep = actualstep;
+		}
+		if(targetstep != null){
+			hr.targetstep = targetstep;
+		}
+		if(km != null && !"".equals(km)){
+			hr.km = km;
+		}
+		if(calories != null && !"".equals(calories)){
+			hr.calories = calories;
+		}
+		if(sleeptime != null){
+			hr.sleeptime = sleeptime;
+		}
+		if(waketime != null){
+			hr.waketime = waketime;
+		}
+		if(wakenum != null){
+			hr.wakenum = wakenum;
+		}
+		if(lightsleep != null){
+			hr.lightsleep = lightsleep;
+		}
+		if(deepsleep != null){
+			hr.deepsleep = deepsleep;
+		}
+		hr.createDate = new Date();
+		hr._save();
+		renderSuccess(initResultJSON());
+	}
+	
+	public static void getMemberRecords(@Required String z) {
+		
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		
+		Session s = sessionCache.get();
+		if(s == null){
+			renderFail("error_session_expired");
+		}
+		
+		Customer c = s.c;
+		JSONObject results = initResultJSON();
+		JSONArray datalist = initResultJSONArray();
+		List<HealthRecord> ls = HealthRecord.find("c_id=?", c.id).fetch(100);
+		for(HealthRecord hr : ls){
+			JSONObject data = initResultJSON();
+			data.put("actualstep", hr.actualstep);
+			data.put("targetstep", hr.targetstep);
+			data.put("km", hr.km);
+			data.put("calories", hr.calories);
+			data.put("sleeptime", DateUtil.reverseDate(hr.sleeptime,0));
+			data.put("waketime", DateUtil.reverseDate(hr.waketime,0));
+			data.put("wakenum", hr.wakenum);
+			data.put("lightsleep", hr.lightsleep);
+			data.put("deepsleep", hr.deepsleep);
+			data.put("createDate", DateUtil.reverseDate(hr.createDate, 0));
+			datalist.add(data);
+		}
+		results.put("list", datalist);
+		renderSuccess(results);
+	}
+	
+	public static void setRWatch(String imei, Long rId, String p_name, String rcode, String nickname, String m_number, String guardian_number, @Required String z) {
+		
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		
+		Session s = sessionCache.get();
+		if(s == null){
+			renderFail("error_session_expired");
+		}
+		
+		RWatch r = null;
+		if(imei == null || "".equals(imei)){
+			r = new RWatch();
+		}else{
+			r = RWatch.findById(rId);
+		}
+		
+		if(r == null)renderFail("error_rwatch_not_exist");
+		
+		if (rcode != null && !"".equals(rcode)){
+			r.rcode = rcode;
+		}
+		if (nickname != null && !"".equals(nickname)){
+			r.nickname = nickname;
+		}
+		if (m_number != null && !"".equals(m_number)){
+			r.m_number = m_number;
+		}
+		if (guardian_number != null && !"".equals(guardian_number)){
+			r.guardian_number = guardian_number;
+		}
+		if(p_name != null && !"".equals(p_name)){
+			r.production = Production.find("p_name=?",p_name).first();
+		}
+		r.c = s.c;
+		r.bindDate = new Date();
+		r.save();
+		JSONObject results = initResultJSON();
+		renderSuccess(results);
+	}
+	
+	public static void getRWatchList(String userName, String pwd, String z) {
+		
+		// 参数验证
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+
+		Session s = sessionCache.get();
+		if(s == null){
+			renderFail("error_session_expired");
+		}
+		
+		Customer c = s.c;
+
+		List<RWatch> rwatchs = RWatch.find("byGuardian", c).fetch();
+		
+		JSONObject results = initResultJSON();
+		JSONArray datalist = initResultJSONArray();
+		if (!rwatchs.isEmpty()) {
+			for(RWatch r : rwatchs){
+				JSONObject data = initResultJSON();
+				data.put("rcode", r.rcode);
+				data.put("m_number", r.m_number);
+				data.put("nickname", r.nickname);
+				data.put("guardian_number", r.guardian_number);
+				data.put("bindDate", r.bindDate);
+				data.put("production", r.production.p_name);
+				datalist.add(data);
+			}
+		}
+		results.put("list", datalist);
+		renderSuccess(results);
+	}
+	
+	public static void getLocation(String userName,	String password, @Required Long rId, String z) {
+		
+		// 参数验证
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		
+		Session s = sessionCache.get();
+		if(s == null){
+			renderFail("error_session_expired");
+		}
+		
+		JSONObject results = initResultJSON();
+		JSONArray datalist = initResultJSONArray();
+		List<Location> locations = Location.find("rwatch_id=?", rId).fetch(5);
+		if (!locations.isEmpty()) {
+			for(Location l : locations){
+				JSONObject data = initResultJSON();
+				data.put("dateTime", l.dateTime);
+				data.put("latitude", l.latitude);
+				data.put("longitude", l.longitude);
+				data.put("rwatchId", l.rwatch.id);
+				datalist.add(data);
+			}
+		}
+		results.put("list", datalist);
+		renderSuccess(results);
+	}
+	
+	public static void getPushInfos(@Required String z) {
+		
+		// 参数验证
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		
+		Session s = sessionCache.get();
+		if(s == null){
+			renderFail("error_session_expired");
+		}
+		
+		JSONObject results = initResultJSON();
+		JSONArray datalist = initResultJSONArray();
+		List<PushInfo> ls = PushInfo.findAll();
+		for(PushInfo pi : ls){
+			JSONObject data = initResultJSON();
+			data.put("pi_name", pi.pi_name);
+			data.put("pi_url", pi.pi_url);
+			data.put("pi_desc", pi.pi_desc);
+			data.put("pi_id", pi.id);
+			datalist.add(data);
+		}
+		results.put("list", datalist);
+		renderSuccess(results);
+	}
+	
+	public static void insertLocation(@Required Long rId, Date dateTime, double latitude, double longitude, Integer mcc, Integer mnc, Integer lac, @Required String z) {
+		
+		// 参数验证
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		
+		RWatch r = RWatch.findById(rId);
+		if(r != null){
+			Location l = new Location();
+			l.dateTime = dateTime;
+			l.lac = lac;
+			l.mcc = mcc;
+			l.mnc = mnc;
+			l.latitude = latitude;
+			l.longitude = longitude;
+			l.receivedTime = new Date();
+			l.rwatch = r;
+			l._save();
+		}
+		
+		JSONObject results = initResultJSON();
 		renderSuccess(results);
 	}
 
@@ -471,8 +709,7 @@ public class Master extends Controller {
 			renderFail("OK");
 		}
 	}
-
-
+	
 	protected static JSONObject initResultJSON() {
 		return JSONUtil.getNewJSON();
 	}

@@ -14,32 +14,35 @@ import play.data.validation.Required;
 import play.db.jpa.Blob;
 import play.db.jpa.Model;
 
-@Table(name = "rwatch")
+@Table(name = "health_record")
 @Entity
-public class RWatch extends Model {
+public class HealthRecord extends Model {
 
-	@MaxSize(30)
-	public String rcode;
+	public Integer actualstep;
 	
-	public String mac;
+	public Integer targetstep;
 	
-	public String m_number;
+	public String km;
 	
-	public String guardian_number;
+	public String calories;
 	
-	public String nickname;
+	public Date sleeptime;
 	
-	public Date bindDate;
+	public Date waketime;
 	
-	//M28 M26
-	@OneToOne(optional = false, cascade = CascadeType.ALL)
-	public Production production;
+	public Integer wakenum;
+	
+	public Float lightsleep;
+	
+	public Float deepsleep;
+	
+	public Date createDate;
 	
 	@Required
-	@ManyToOne(fetch=FetchType.LAZY,cascade=javax.persistence.CascadeType.REFRESH, optional = true)
+	@ManyToOne(fetch=FetchType.LAZY,cascade=javax.persistence.CascadeType.REFRESH)
 	public Customer c;
 	
 	public String toString(){
-		return nickname;
+		return c.nickname;
 	}
 }

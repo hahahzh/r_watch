@@ -8,6 +8,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Index;
+
 import play.data.validation.MaxSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
@@ -19,6 +21,7 @@ import controllers.CRUD.Hidden;
 public class Production extends Model {
 
 	@Required
+	@Index(name="p_name_index")
 	public String p_name;
 	
 	@Column(columnDefinition="TEXT")
@@ -26,8 +29,7 @@ public class Production extends Model {
 	public String p_desc;
 	
 	@Hidden
-	@Temporal(TemporalType.DATE)
-	public Date updatetime = DateUtil.reverse2Date(DateUtil.reverseDate(new Date(), 0));
+	public String updatetime = DateUtil.reverseDate(new Date(), 0);
 	
 	public String toString() {
 		return p_name;
