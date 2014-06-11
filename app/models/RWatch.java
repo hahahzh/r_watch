@@ -40,6 +40,6 @@ public class RWatch extends Model {
 	public Customer c;
 	
 	public String toString(){
-		return nickname;
+		return production.p_name;
 	}
 }

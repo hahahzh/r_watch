@@ -19,6 +19,7 @@ import play.data.validation.Phone;
 import play.data.validation.Required;
 import play.data.validation.URL;
 import play.data.validation.Unique;
+import play.db.jpa.Blob;
 import play.db.jpa.Model;
 import utils.DateUtil;
 
@@ -26,7 +27,7 @@ import utils.DateUtil;
 @Entity
 public class ClientVersion extends Model {
 
-	@Required
+//	@Required
 	@URL
 	public String url;
 	
@@ -36,6 +37,9 @@ public class ClientVersion extends Model {
 	@Required
 	@Index(name = "idx_version")
 	public String version;
+	
+	@Required
+	public Blob apk;
 	
 	@Hidden
 	public String updatetime = DateUtil.reverseDate(new Date(), 0);

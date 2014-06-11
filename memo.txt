@@ -2,13 +2,13 @@ mysql
 mysqld -nt --skip-grant-tables
 CREATE DATABASE IF NOT EXISTS Rwatch default charset utf8 COLLATE utf8_general_ci;
 
-grant all privileges on *.* to hwalk1@'%' identified by 'hwalk1';
+grant all privileges on *.* to rwatch@'%' identified by 'rwatch';
 flush privileges;
 
 
 
 
-/usr/local/mysql/bin/mysql -uroot -p -S/tmp/mysql.sock
+/usr/bin/mysql -uroot -p -S/var/lib/mysql/mysql.sock
 
 export JAVA_HOME=/usr/java/jdk1.7.0_45
 export PATH=$PATH:$JAVA_HOME/bin
@@ -27,5 +27,8 @@ set env DISPLAY 127.0.0.1:0.0
 
 
 mysqldump -uroot -p Rwatch > /tmp/RwatchAllData.sql
-
-
+aliyun
+1006168123@qq.com
+oviphoneyuwenjie
+114.215.180.64，用户名：root，密码：86f24d48
+RDS mysqlforrwatch.mysql.rds.aliyuncs.com 用户名oviphonerwatch 密码oviphone2014

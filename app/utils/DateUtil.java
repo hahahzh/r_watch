@@ -35,6 +35,8 @@ public class DateUtil {
 	private static final String FORMAT_2 = "HH:mm:ss";
 	
 	private static final String FORMAT_3 = "yyyy/MM/dd HH:mm:ss";
+	
+	private static final String FORMAT_4 = "yyyy-MM-dd HH:mm";
 
 	/**
 	 * 
@@ -63,6 +65,8 @@ public class DateUtil {
 			case 2: simple = new SimpleDateFormat(FORMAT_2);
 			break;
 			case 3: simple = new SimpleDateFormat(FORMAT_3);
+			break;
+			case 4: simple = new SimpleDateFormat(FORMAT_4);
 			break;
 			default:simple = new SimpleDateFormat(FORMAT_0);
 			break;
@@ -161,6 +165,12 @@ public class DateUtil {
 		switch (date.trim().length()) {
 
 		case 19:// 日期+时间
+
+			simple = new SimpleDateFormat(FORMAT_0);
+
+			break;
+			
+		case 18:// 日期+时间
 
 			simple = new SimpleDateFormat(FORMAT_0);
 

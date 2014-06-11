@@ -16,13 +16,9 @@
             %{ _fields.each() { }%
             <th>
                 %{ if(!_sort || _sort.contains(it)) { }%
-	                %{if (it != 'production'){}%
-	                <a class="${_caller.orderBy == it ? (_caller.order == 'DESC' ? 'crudSortedDesc' : 'crudSortedAsc') : ''}" href="@{list().remove('page').add('search', params.search).add('orderBy', it).add('order', (_caller.orderBy == it && _caller.order == 'ASC' ? 'DESC' : 'ASC'))}">
-	                    &{it}
-	                </a>
-	                %{} else {}%
-	                	&{it}
-	                %{}}%
+                <a class="${_caller.orderBy == it ? (_caller.order == 'DESC' ? 'crudSortedDesc' : 'crudSortedAsc') : ''}" href="@{list().remove('page').add('search', params.search).add('orderBy', it).add('order', (_caller.orderBy == it && _caller.order == 'ASC' ? 'DESC' : 'ASC'))}">
+                    &{it}
+                </a>
                 %{ } else { }%
                     &{it}
                 %{ } }%
@@ -30,7 +26,7 @@
             %{ } }%
         %{ } else { }%
             <th>
-               <a class="${_caller.order == 'DESC' ? 'crudSortedDesc' : 'crudSortedAsc'}" href="@{list().remove('page').add('search', params.search).add('order', (_caller.order == 'DESC' ? 'ASC' : 'DESC'))}">
+                <a class="${_caller.order == 'DESC' ? 'crudSortedDesc' : 'crudSortedAsc'}" href="@{list().remove('page').add('search', params.search).add('order', (_caller.order == 'DESC' ? 'ASC' : 'DESC'))}">
                     &{_caller.type.name}
                 </a>
             </th>
@@ -53,35 +49,16 @@
                     }%
                 %{ } else { }%
                     %{ if(i == 0) { }%
-                        ${object[field]?.toString()?.escape()?.raw() ?: ''}<!-- <a href="@{show(object._key())}">${object[field]?.toString()?.escape()?.raw() ?: '(no value)'}</a> -->
+                        <a href="@{show(object._key())}">${object[field]?.toString()?.escape()?.raw() ?: '(no value)'}</a>
                     %{ } else { }%
-                    
-                    	%{ if(field == 'production') { }%
-                    	${_caller.rwatchs[k]}
-                        %{ } else if (_caller.type.getField(field).type == 'file') { }%
+                        %{ if(_caller.type.getField(field).type == 'file') { }%
                             %{ if(object[field]) { }%
                                 <a class="currentAttachment" href="@{attachment(object.id, field)}">${object[field].filename} (${object[field].get().size().formatSize()})</a>
                              %{ } else { }%
                                 
                              %{ } }%
                         %{ } else { }%
-                        	#{if _caller.type.getField(field).name == 'os'}
-                        		${object[field] == 1?'Android':'IOS'}
-                        	#{/if}
-                        	#{elseif _caller.type.getField(field).name == 'gender'}
-                        		${object[field] == 0?'男':'女'}
-                        	#{/elseif}
-                        	#{elseif _caller.type.getField(field).name == 'email'}
-                        		#{if object[field]?.length()>15}
-									${object[field]?.substring(0,15)+'...'}
-								#{/if}
-								#{else}
-									${object[field]}
-								#{/else}
-                        	#{/elseif}
-                        	#{else}
-                        		${object[field]?.escape()?.raw()}
-                        	#{/else}
+                            ${object[field]?.escape()?.raw()}
                         %{ } }%
                     %{ } }%
                 %{ } }%
@@ -96,7 +73,7 @@
                 #{doBody body:handler /}
             %{ } else { }%
                 <td>
-                    <a href="@{show(object._key())}">${object.toString()?.escape()?.raw() ?: ''}</a>
+                    <a href="@{show(object._key())}">${object.toString()?.escape()?.raw() ?: '(no value)'}</a>
                 </td>
             %{ } }%
         %{ } }%

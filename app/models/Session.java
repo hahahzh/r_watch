@@ -25,12 +25,14 @@ public class Session extends Model {
 	@JoinColumn(name = "customer_id", unique = true)
 	public Customer c;
 	
+	public String nickname;
+	
 	@Required
 	@Index(name = "idx_sessionID")
 	@Unique
 	public String sessionID;
 	
-	public Date updatetime;
+	public Date loginUpdatetime;
 
 	public String toString() {
 		return c.toString();

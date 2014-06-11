@@ -86,7 +86,7 @@ public class Master extends Controller {
 	 * 
 	 * @param sessionID
 	 */
-	@Before(unless={"checkDigit", "register", "login", "sendResetPasswordMail", "update"},priority=1)
+	@Before(unless={"checkDigit", "register", "login", "sendResetPasswordMail", "update", "download"},priority=1)
 	public static void validateSessionID(@Required String z) {
 		
 		Session s = Session.find("bySessionID",z).first();
@@ -137,9 +137,9 @@ public class Master extends Controller {
 		}
 
 		try {			
-			byte[] b = Coder.decryptBASE64(z);
-			String src = new String(b);
-			String[] arr = src.split("\\|");
+//			byte[] b = Coder.decryptBASE64(z);
+//			String src = new String(b);
+			String[] arr = z.split("\\|");
 		
 			//TODO 验证码
 //			int i = Integer.parseInt(arr[7]);
@@ -173,11 +173,11 @@ public class Master extends Controller {
 			m.updatetime = new Date();
 			m.save();
 			
-			Session s = Session.find("byC", m).first();
-			if(s == null)s = new Session();
+			Session s = new Session();
 			s.c = m;
-			s.updatetime = new Date();
+			s.loginUpdatetime = new Date();
 			s.sessionID = UUID.randomUUID().toString();
+			s.nickname = m.nickname;
 			s.save();
 			
 			JSONObject results = initResultJSON();
@@ -216,7 +216,11 @@ public class Master extends Controller {
 			renderFail("error_parameter_required");
 		}
 		Customer c = Customer.find("byM_number", phone).first();
-			
+		
+		if(c == null){
+			c = Customer.find("byEmail", phone).first();
+		}
+		
 		if(c == null || !c.pwd.equals(pwd)){
 			renderFail("error_username_or_password_not_match");
 		}
@@ -226,9 +230,11 @@ public class Master extends Controller {
 			s = new Session();
 			s.c = c;
 			s.sessionID = UUID.randomUUID().toString();
-			s.updatetime = new Date();
+			s.loginUpdatetime = new Date();
+			s.nickname = c.nickname;
 			s.save();
 		}
+		c.updatetime = new Date();
 		c.os = os;
 		c.save();
 		sessionCache.set(s);
@@ -259,6 +265,8 @@ public class Master extends Controller {
 		Session s = sessionCache.get();
 		if(s != null && s.id != 1 && s.id != 2){
 			s.delete();
+			s.sessionID = "";
+			s.save();
 		}
 		renderSuccess(initResultJSON());
 	}
@@ -647,7 +655,7 @@ public class Master extends Controller {
 	 * @param fileName
 	 *            ....
 	 */
-	public static void download(@Required String id, @Required String fileID, @Required String entity, @Required String z) {
+	public static void download(@Required String id, @Required String fileID, @Required String entity) {
 
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
@@ -693,17 +701,17 @@ public class Master extends Controller {
 	 * @param type
 	 * @throws JSONException 
 	 */
-	public static void update(@Required String version,
-			@Required Integer p_id, @Required Integer m_id) {
+	public static void update(@Required String version, @Required Integer m_id) {
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
 		}
-		ClientVersion cv = ClientVersion.find("production_id = ? and mobiletype_id = ?", p_id, m_id).first();
+		ClientVersion cv = ClientVersion.find("mobiletype_id = ?", m_id).first();
 		if (cv != null && !cv.version.equals(version)) {
 			
 			JSONObject results = initResultJSON();
 			results.put("url", cv.url);
 			results.put("update", cv.update_desc);
+			results.put("apk", "/c/download?id=" + cv.id + "&fileID=apk&entity=" + cv.getClass().getName());
 			renderSuccess(results);
 		} else {
 			renderFail("OK");
