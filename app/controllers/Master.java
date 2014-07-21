@@ -7,11 +7,11 @@ import java.util.UUID;
 
 import javax.mail.internet.InternetAddress;
 
-import models.CheckDigit;
 import models.ClientVersion;
 import models.Customer;
 import models.HealthRecord;
 import models.Location;
+import models.Log;
 import models.Production;
 import models.PushInfo;
 import models.RWatch;
@@ -29,10 +29,10 @@ import play.i18n.Messages;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.Http.Header;
-import utils.Coder;
 import utils.DateUtil;
 import utils.JSONUtil;
 import utils.SendMail;
+import utils.StringUtil;
 import controllers.CRUD.ObjectType;
 
 /**
@@ -206,7 +206,7 @@ public class Master extends Controller {
 	 */
 	public static void login(@Required String phone,
 			@Required String pwd, @Required Integer os,
-			String serialNumber, String ip, String imei, String mac) {
+			String serialNumber, String ip, String imei, String mac, String imsi) {
 		// ....
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
@@ -219,6 +219,7 @@ public class Master extends Controller {
 		
 		if(c == null){
 			c = Customer.find("byEmail", phone).first();
+			if(c == null)c = Customer.find("byWeixin", phone).first();
 		}
 		
 		if(c == null || !c.pwd.equals(pwd)){
@@ -232,11 +233,11 @@ public class Master extends Controller {
 			s.sessionID = UUID.randomUUID().toString();
 			s.loginUpdatetime = new Date();
 			s.nickname = c.nickname;
-			s.save();
+			s._save();
 		}
 		c.updatetime = new Date();
 		c.os = os;
-		c.save();
+		c._save();
 		sessionCache.set(s);
 		
 		JSONObject results = initResultJSON();
@@ -245,6 +246,17 @@ public class Master extends Controller {
 		results.put("name", c.nickname);
 		results.put("session", s.sessionID);
 		play.Logger.info("login:OK "+c.m_number+" "+c.mac);
+		
+		Log l = new Log();
+		l.c_id = c.id;
+		l.ip = ip;
+		l.imei = imei;
+		l.imsi = imsi;
+		l.mac = mac;
+		l.updatetime = new Date();
+		l.type = "login";
+		l._save();
+		
 		renderSuccess(results);
 	}
 	
@@ -282,7 +294,9 @@ public class Master extends Controller {
 
 		Customer c = Customer.find("byM_number", m).first();
 		if (c == null) {
-			renderFail("error_username_not_exist");
+			c = Customer.find("byEmail", m).first();
+			if(c == null)c = Customer.find("byWeixin", m).first();
+			if(c == null)renderFail("error_username_not_exist");
 		}
 
 		SendMail mail = new SendMail(
@@ -310,7 +324,7 @@ public class Master extends Controller {
 
 	//更新用户信息
 	public static void updateMemberInfo(Integer os, String nickname, String pwd, String gender, String email, 
-			String city, Date birthday, String height, String weight, Blob portrait, @Required String z) {
+			String city, Date birthday, String height, String weight, String weixin, Blob portrait, @Required String z) {
 
 		// ....
 		if (Validation.hasErrors()) {
@@ -347,6 +361,9 @@ public class Master extends Controller {
 		if(weight != null){
 			c.weight = weight;
 		}
+		if(!StringUtil.isEmpty(weixin)){
+			c.weixin = weixin;
+		}
 		if(portrait != null){
 			if(c.portrait.exists()){
 				c.portrait.getFile().delete();
@@ -380,6 +397,7 @@ public class Master extends Controller {
 		results.put("city", c.city);
 		results.put("height", c.height);
 		results.put("weight", c.weight);
+		results.put("weixin", c.weixin);
 		results.put("birthday", DateUtil.reverseDate(c.birthday,1));
 		
 		if(c.portrait != null && c.portrait.exists()){
@@ -394,7 +412,10 @@ public class Master extends Controller {
 		renderSuccess(results);
 	}
 	
-	public static void setMemberRecord(Integer actualstep, Integer targetstep, String km, String calories, Date sleeptime, Date waketime, Integer wakenum, Float lightsleep, Float deepsleep, @Required String z) {
+	public static void setMemberRecord(@Required Integer type, Integer actualstep, Integer targetstep, 
+			Integer turnover, String km, String calories, String sleeptime, String waketime, Integer wakenum, 
+			Integer heartrate, Integer high, Float deepsleep, Float shallowsleep, Float actiontime, 
+			@Required String createDate, @Required String z) {
 		
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
@@ -407,11 +428,15 @@ public class Master extends Controller {
 
 		HealthRecord hr = new HealthRecord();
 		hr.c = s.c;
+		hr.type = type;
 		if(actualstep != null){
 			hr.actualstep = actualstep;
 		}
 		if(targetstep != null){
 			hr.targetstep = targetstep;
+		}
+		if(turnover != null){
+			hr.turnover = turnover;
 		}
 		if(km != null && !"".equals(km)){
 			hr.km = km;
@@ -420,21 +445,30 @@ public class Master extends Controller {
 			hr.calories = calories;
 		}
 		if(sleeptime != null){
-			hr.sleeptime = sleeptime;
+			hr.sleeptime = DateUtil.reverse2Date(sleeptime);
 		}
 		if(waketime != null){
-			hr.waketime = waketime;
+			hr.waketime = DateUtil.reverse2Date(waketime);
 		}
 		if(wakenum != null){
 			hr.wakenum = wakenum;
 		}
-		if(lightsleep != null){
-			hr.lightsleep = lightsleep;
+		if(high != null){
+			hr.high = high;
+		}
+		if(heartrate != null){
+			hr.heartrate = heartrate;
 		}
 		if(deepsleep != null){
 			hr.deepsleep = deepsleep;
 		}
-		hr.createDate = new Date();
+		if(shallowsleep != null){
+			hr.shallowsleep = shallowsleep;
+		}
+		if(actiontime != null){
+			hr.actiontime = actiontime;
+		}
+		hr.createDate = DateUtil.reverse2Date(createDate);
 		hr._save();
 		renderSuccess(initResultJSON());
 	}
@@ -456,15 +490,18 @@ public class Master extends Controller {
 		List<HealthRecord> ls = HealthRecord.find("c_id=?", c.id).fetch(100);
 		for(HealthRecord hr : ls){
 			JSONObject data = initResultJSON();
+			data.put("type", hr.type);
 			data.put("actualstep", hr.actualstep);
 			data.put("targetstep", hr.targetstep);
+			data.put("turnover", hr.turnover);
 			data.put("km", hr.km);
 			data.put("calories", hr.calories);
 			data.put("sleeptime", DateUtil.reverseDate(hr.sleeptime,0));
 			data.put("waketime", DateUtil.reverseDate(hr.waketime,0));
 			data.put("wakenum", hr.wakenum);
-			data.put("lightsleep", hr.lightsleep);
 			data.put("deepsleep", hr.deepsleep);
+			data.put("shallowsleep", hr.shallowsleep);
+			data.put("actiontime", hr.actiontime);
 			data.put("createDate", DateUtil.reverseDate(hr.createDate, 0));
 			datalist.add(data);
 		}
@@ -472,7 +509,7 @@ public class Master extends Controller {
 		renderSuccess(results);
 	}
 	
-	public static void setRWatch(String imei, Long rId, String p_name, String rcode, String nickname, String m_number, String guardian_number, @Required String z) {
+	public static void setRWatch(String imei, Long rId, String p_name, String nickname, String m_number, String guardian_number, @Required String z) {
 		
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
@@ -484,17 +521,14 @@ public class Master extends Controller {
 		}
 		
 		RWatch r = null;
-		if(imei == null || "".equals(imei)){
+		if(!StringUtil.isEmpty(imei)){
 			r = new RWatch();
+			r.imei = imei;
 		}else{
-			r = RWatch.findById(rId);
+			if(rId != null)	r = RWatch.findById(rId);
+			if(r == null)renderFail("error_rwatch_not_exist");
 		}
 		
-		if(r == null)renderFail("error_rwatch_not_exist");
-		
-		if (rcode != null && !"".equals(rcode)){
-			r.rcode = rcode;
-		}
 		if (nickname != null && !"".equals(nickname)){
 			r.nickname = nickname;
 		}
@@ -509,12 +543,12 @@ public class Master extends Controller {
 		}
 		r.c = s.c;
 		r.bindDate = new Date();
-		r.save();
+		r._save();
 		JSONObject results = initResultJSON();
 		renderSuccess(results);
 	}
 	
-	public static void getRWatchList(String userName, String pwd, String z) {
+	public static void getRWatchList(@Required String z) {
 		
 		// 参数验证
 		if (Validation.hasErrors()) {
@@ -528,18 +562,18 @@ public class Master extends Controller {
 		
 		Customer c = s.c;
 
-		List<RWatch> rwatchs = RWatch.find("byGuardian", c).fetch();
+		List<RWatch> rwatchs = RWatch.find("byC", c).fetch();
 		
 		JSONObject results = initResultJSON();
 		JSONArray datalist = initResultJSONArray();
 		if (!rwatchs.isEmpty()) {
 			for(RWatch r : rwatchs){
 				JSONObject data = initResultJSON();
-				data.put("rcode", r.rcode);
+				data.put("imei", r.imei);
 				data.put("m_number", r.m_number);
 				data.put("nickname", r.nickname);
 				data.put("guardian_number", r.guardian_number);
-				data.put("bindDate", r.bindDate);
+				data.put("bindDate", DateUtil.reverseDate(r.bindDate,3));
 				data.put("production", r.production.p_name);
 				datalist.add(data);
 			}
@@ -628,6 +662,24 @@ public class Master extends Controller {
 		JSONObject results = initResultJSON();
 		renderSuccess(results);
 	}
+	
+	public static void changePassword(@Required String oldPassword, @Required String newPassword, @Required String z) {
+		JSONObject results = initResultJSON();
+		// ....
+		if (Validation.hasErrors()) {
+			renderFail("error_parameter_required");
+		}
+		Session s = Session.find("bySessionID",z).first();
+		if(s.c.pwd.equals(oldPassword) && !StringUtil.isEmpty(newPassword)){
+			s.c.pwd = newPassword;
+			s.c._save();
+			renderSuccess(results);
+		}else{
+			renderFail("error_old_password_not_match");
+		}
+		
+
+	}
 
 	public static void clearCache(@Required String z) {
 		JSONObject results = initResultJSON();
@@ -701,15 +753,20 @@ public class Master extends Controller {
 	 * @param type
 	 * @throws JSONException 
 	 */
-	public static void update(@Required String version, @Required Integer m_id) {
+	public static void update(@Required String version, Integer m_id, String m_type) {
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
 		}
 		ClientVersion cv = ClientVersion.find("mobiletype_id = ?", m_id).first();
+		if(cv == null){
+			cv = ClientVersion.find("mobiletype.type = ?", m_type).first();
+		}
 		if (cv != null && !cv.version.equals(version)) {
 			
 			JSONObject results = initResultJSON();
 			results.put("url", cv.url);
+			results.put("version", cv.version);
+			results.put("m_type", cv.mobiletype.type);
 			results.put("update", cv.update_desc);
 			results.put("apk", "/c/download?id=" + cv.id + "&fileID=apk&entity=" + cv.getClass().getName());
 			renderSuccess(results);

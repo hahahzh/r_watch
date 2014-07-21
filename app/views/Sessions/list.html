@@ -13,20 +13,22 @@
 	<table>
     	<thead>
         <tr>
-            <th>&{'nickname'}</th>
             <th>&{'loginUpdatetime'}</th>
-     		<th>&{'imei'}</th>
-            <th>&{'imsi'}</th>
+            <th>&{'m_number'}</th>
+     		<th>&{'email'}</th>
+            <th>&{'imei'}</th>
             <th>&{'mac'}</th>
+            <th>&{'city'}</th>
         </tr>
     	</thead>
 		#{list items:objects, as:'c'}
 		<tr>
-		<td>${c.nickname}</td>
 		<td>${c.loginUpdatetime}</td>
+		<td>${c.c.m_number}</td>
+		<td>${c.c.email}</td>
 		<td>${c.c.imei}</td>
-		<td>${c.c.imsi}</td>
 		<td>${c.c.mac}</td>
+		<td>${c.c.city}</td>
 		</tr>
 		#{/list}
 	</table>

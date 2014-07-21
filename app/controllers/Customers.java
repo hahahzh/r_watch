@@ -10,6 +10,7 @@ import java.util.List;
 import models.Customer;
 import models.RWatch;
 import play.db.Model;
+import play.db.jpa.JPA;
 import play.exceptions.TemplateNotFoundException;
 import play.mvc.With;
 import utils.DateUtil;
@@ -97,4 +98,10 @@ public class Customers extends CRUD {
 			e.printStackTrace();
 		}
 	}
+    
+
+    public static List<Customer> getCustomers(){
+    	//return JPA.em().createNativeQuery("select m_number,nickname from customer").getResultList();
+    	return Customer.findAll();
+    }
 }

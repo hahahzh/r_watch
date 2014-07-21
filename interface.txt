@@ -1,14 +1,15 @@
 1 升级
 http://127.0.0.1:9000/c/update?version=1.1&p_id=2&m_id=1
-vsrsion:版本号
-p_id:产品ID
+(必须)vsrsion:版本号
 m_id:手机操作系统ID  1 Android  2 IOS
+m_type:手机操作系统  Android IOS WP *传递次参数必须和服务器设置的一样 例 m_type=Android 则服务器端存储的一定是Android
 
-{"state":"1","results":{"url":"http://www.sohu.com","update":"更新2\r\n3"}}
+{"state":"1","results":{"url":"http://qweqw.com","version":"1.0","m_type":"Android","update":"1 Andorid","apk":"/c/download?id=4&fileID=apk&entity=models.ClientVersion"}}
 
 
 2 注册
 http://127.0.0.1:9000/c/reg?z=MjN8MTIzNDV8MTIsMTQsODcsamosZmZ8MTIzNDU2fDEyMzQ1NnwxfDEzODM4Mzg5NDM2fDEyNDgzM3wxMjM0NTZ8MzIx
+(必须)z
 
 23|   12345|12,14,87,jj,ff|123456|123456|1                          |13838389436|1248  |123456|321
 随机 渠道号   MAC           IMEI   IMSI   操作系统 1IOS 2android 3WP   手机号     验证码   密码  随即
@@ -17,17 +18,22 @@ http://127.0.0.1:9000/c/reg?z=MjN8MTIzNDV8MTIsMTQsODcsamosZmZ8MTIzNDU2fDEyMzQ1Nn
 
 
 3 登陆
-http://127.0.0.1:9000/c/login?phone=13838389436&pwd=123456&os=1&serialNumber=5434rfg5454
-phone：手机号 
-pwd：密码 
-os：操作系统 1 Android 2 IOS
+http://127.0.0.1:9000/c/login?phone=13838389436&pwd=123456&os=1&serialNumber=5434rfg5454&ip=10.221.2.0&imei=423423423&mac=22,55,fd,3&imsi=8218490230423
+(必须)phone：手机号 
+(必须)pwd：密码 
+(必须)os：操作系统 1 Android 2 IOS
 serialNumber：IPhone serial（推送用）安卓可省略
+ip
+imei
+mac
+imsi
 
 {"state":"1","results":{"uid":1,"phone":"13838389436","session":"c7901d79-9cb4-4b31-8f86-5607dee97036"}}
 
 
 4 退出
 http://127.0.0.1:9000/c/logout?z=c7901d79-9cb4-4b31-8f86-5607dee97036
+(必须)z
 
 {"state":"1","results":{}}
 
@@ -48,17 +54,21 @@ city：城市
 birthday：生日
 height：身高
 weight：体重
+weixin：微信号
 portrait：头像
+(必须)z
 
 {"state":"1","results":{}}
 
 7 获取用户信息
 http://127.0.0.1:9000/c/getCustomerInfo?z=c7901d79-9cb4-4b31-8f86-5607dee97036
+(必须)z
 
 {"state":"1","results":{"phonenumber":"13838389436","nickname":"昵称","email":"haha@163.com","os":"1","gender":"1","city":"上海","height":"175","weight":"75","birthday":"1986-05-21","portrait":"/public/images/girl.jpg"}}
 
 8 上传运动轨迹
-http://127.0.0.1:9000/c/setRecord?actualstep=2&targetstep=1&km=12&calories=5000&sleeptime=2014-05-21%2022:00:00&waketime=2014-05-22%2006:00:00&wakenum=8&lightsleep=1.8&deepsleep=1.45&z=c7901d79-9cb4-4b31-8f86-5607dee97036
+http://127.0.0.1:9000/c/setRecord?type=1&actualstep=2&targetstep=1&turnover=3&km=12&calories=5000&sleeptime=2014-05-21%2022:00:00&waketime=2014-05-22%2006:00:00&createDate=2014-05-22%2006:00:00&wakenum=8&z=c7901d79-9cb4-4b31-8f86-5607dee97036
+(必须)type:类型 0:默认 1:运动 2:睡眠 3:室内 4:室外 5:慢跑 6:长跑 7:浅睡 8:深睡
 actualstep：实际步数
 targetstep：目标步数
 km：公里数
@@ -66,23 +76,28 @@ calories：消耗卡路里
 sleeptime：入睡时间
 waketime：苏醒时间
 wakenum：起夜次数
-lightsleep：浅睡时间
-deepsleep：深睡时间
+turnover：翻身次数
+high:高度
+heartrate:心率
+createDate：日期时间
+(必须)z
 
 {"state":"1","results":{}}
 
 9 获得运动轨迹
 http://127.0.0.1:9000/c/getRecords?z=c7901d79-9cb4-4b31-8f86-5607dee97036
+(必须)z
 
-{"state":"1","results":{"list":[{"actualstep":2,"targetstep":1,"km":"12","calories":"5000","sleeptime":"2014-05-21 00:00:00","waketime":"2014-05-22 00:00:00","wakenum":8,"lightsleep":1.8,"deepsleep":1.45,"createDate":"2014-05-22 00:01:26"}]}}
+{"state":"1","results":{"list":[{"type":2,"actualstep":2,"targetstep":1,"turnover":3,"km":"12","calories":"5000","sleeptime":"2014-05-21 00:00:00","waketime":"2014-05-22 00:00:00","wakenum":8,"lightsleep":1.8,"deepsleep":1.45,"createDate":"2014-05-22 00:01:26"}]}}
 
 10 忘记密码时获取密码
 http://127.0.0.1:9000/c/resetpassword?m=13838389436
-
+(必须)m:手机 邮箱 微信号
 {"state":"1","results":{}}
 
 11 获取推送广告信息
 http://127.0.0.1:9000/c/getADs?z=f5f997a0-621f-4af2-8d91-47cb305b5d99
+(必须)z
 
 {"state":"1","results":{"list":[{"pi_name":"推送信息","pi_url":"https://asdsa.com","pi_desc":"将范德萨rew ","pi_id":1},{"pi_name":"信息2","pi_url":"http://dd.com","pi_desc":"测试测试测试测试测试测试","pi_id":2}]}}
 
@@ -92,3 +107,20 @@ state：0
 msg：错误信息
 
 {"state":"0","msg":"重置密码邮件发送失败,请检查您的用户名."}
+
+
+13 修改密码
+http://127.0.0.1:9000/c/changePassword?oldPassword=321&newPassword=098765&z=d3598880-6b2c-40be-9bc6-174c0a199527
+(必须)oldPassword:旧密码
+(必须)newPassword:新密码
+(必须)z
+
+14 绑定、更改产品
+http://127.0.0.1:9000/c/setUserWatch?imei=3212332&rId=&p_name=m26&nickname=%E6%B5%8B%E8%AF%95&m_number=150099878767&guardian_number=1231234432&z=6335f91d-372e-4c19-9f5f-a9ec022fe513
+(必须)imei:产品IMEI 新增产品为必填项
+(必须)rId:已绑定产品ID 更改已有产品时为必填项
+p_name:产品名称  M26 M28
+nickname:产品昵称
+m_number:sim卡电话号码
+guardian_number=监护人电话号码
+(必须)z

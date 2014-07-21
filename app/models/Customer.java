@@ -67,6 +67,8 @@ public class Customer extends Model {
 	@Email
 	public String email;
 	
+	public String weixin;
+	
 	public String city;
 	
 	public Date birthday;

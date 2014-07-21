@@ -12,7 +12,7 @@ import play.db.jpa.Model;
 @Entity
 public class Log extends Model {
 
-	public Customer c;
+	public Long c_id;
 	
 	public Date updatetime;
 
@@ -22,9 +22,11 @@ public class Log extends Model {
 	
 	public String imei;
 	
+	public String imsi;
+	
 	public String type;
 	
 	public String toString() {
-		return c.nickname;
+		return c_id+"";
 	}
 }

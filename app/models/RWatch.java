@@ -19,7 +19,7 @@ import play.db.jpa.Model;
 public class RWatch extends Model {
 
 	@MaxSize(30)
-	public String rcode;
+	public String imei;
 	
 	public String mac;
 	

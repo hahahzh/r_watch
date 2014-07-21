@@ -15,6 +15,9 @@ GET     /                                       Application.index
 *       /c/update								Master.update
 *       /c/resetpassword						Master.sendResetPasswordMail
 *       /c/getADs								Master.getPushInfos
+*       /c/setUserWatch							Master.setRWatch
+*       /c/changePassword						Master.changePassword
+*       /c/getUserWatch							Master.getRWatchList
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

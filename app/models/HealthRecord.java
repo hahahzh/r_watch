@@ -18,9 +18,15 @@ import play.db.jpa.Model;
 @Entity
 public class HealthRecord extends Model {
 
+	// 1:运动 2:睡眠 3:室内 4:室外 5:慢跑 6:长跑 7:浅睡 8:深睡
+	@Required
+	public Integer type;
+	
 	public Integer actualstep;
 	
 	public Integer targetstep;
+	
+	public Integer turnover;
 	
 	public String km;
 	
@@ -30,11 +36,17 @@ public class HealthRecord extends Model {
 	
 	public Date waketime;
 	
+	public float deepsleep;
+	
+	public float shallowsleep;
+	
+	public float actiontime;
+	
 	public Integer wakenum;
 	
-	public Float lightsleep;
+	public Integer high;
 	
-	public Float deepsleep;
+	public Integer heartrate;
 	
 	public Date createDate;
 	
