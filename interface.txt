@@ -44,7 +44,7 @@ http://127.0.0.1:9000/c/download?id=3&fileID=icon&entity=models.New&z=af017cae-d
 
 
 6 更新用户信息
-http://127.0.0.1:9000/c/updateCustomerInfo?os=1&nickname=%E6%98%B5%E7%A7%B0&pwd=654321&gender=1&email=haha@163.com&city=%E4%B8%8A%E6%B5%B7&birthday=1986-05-21&height=175&weight=75&z=c7901d79-9cb4-4b31-8f86-5607dee97036
+http://127.0.0.1:9000/c/updateCustomerInfo?os=1&nickname=%E6%98%B5%E7%A7%B0&pwd=654321&gender=1&email=haha@163.com&city=%E4%B8%8A%E6%B5%B7&birthday=1986-05-21&height=175&weight=75&step=100&z=c7901d79-9cb4-4b31-8f86-5607dee97036
 os：操作系统 1 Android 2 IOS
 nickname：昵称
 pwd：密码
@@ -54,6 +54,7 @@ city：城市
 birthday：生日
 height：身高
 weight：体重
+step：步长
 weixin：微信号
 portrait：头像
 (必须)z
@@ -64,10 +65,10 @@ portrait：头像
 http://127.0.0.1:9000/c/getCustomerInfo?z=c7901d79-9cb4-4b31-8f86-5607dee97036
 (必须)z
 
-{"state":"1","results":{"phonenumber":"13838389436","nickname":"昵称","email":"haha@163.com","os":"1","gender":"1","city":"上海","height":"175","weight":"75","birthday":"1986-05-21","portrait":"/public/images/girl.jpg"}}
+{"state":"1","results":{"phonenumber":"13838389436","nickname":"昵称","email":"haha@163.com","os":"1","gender":"1","city":"上海","height":"175","weight":"75","step":"100","birthday":"1986-05-21","portrait":"/public/images/girl.jpg"}}
 
 8 上传运动轨迹
-http://127.0.0.1:9000/c/setRecord?type=1&actualstep=2&targetstep=1&turnover=3&km=12&calories=5000&sleeptime=2014-05-21%2022:00:00&waketime=2014-05-22%2006:00:00&createDate=2014-05-22%2006:00:00&wakenum=8&z=c7901d79-9cb4-4b31-8f86-5607dee97036
+http://127.0.0.1:9000/c/setRecord?type=1&actualstep=2&deepsleep=2&lightsleep=1&high=3&heartrate=45&targetstep=1&turnover=3&km=12&calories=5000&sleeptime=2014-05-21%2022:00:00&waketime=2014-05-22%2006:00:00&sports_start_time=2014-05-22%2006:00:00&sports_end_time=2014-05-22%2010:00:00&wakenum=8&z=6335f91d-372e-4c19-9f5f-a9ec022fe513
 (必须)type:类型 0:默认 1:运动 2:睡眠 3:室内 4:室外 5:慢跑 6:长跑 7:浅睡 8:深睡
 actualstep：实际步数
 targetstep：目标步数
@@ -79,16 +80,17 @@ wakenum：起夜次数
 turnover：翻身次数
 high:高度
 heartrate:心率
-createDate：日期时间
+createDate：开始日期时间
+endDate：结束日期时间
 (必须)z
 
 {"state":"1","results":{}}
 
 9 获得运动轨迹
-http://127.0.0.1:9000/c/getRecords?z=c7901d79-9cb4-4b31-8f86-5607dee97036
+http://127.0.0.1:9000/c/getRecords?z=6335f91d-372e-4c19-9f5f-a9ec022fe513
 (必须)z
 
-{"state":"1","results":{"list":[{"type":2,"actualstep":2,"targetstep":1,"turnover":3,"km":"12","calories":"5000","sleeptime":"2014-05-21 00:00:00","waketime":"2014-05-22 00:00:00","wakenum":8,"lightsleep":1.8,"deepsleep":1.45,"createDate":"2014-05-22 00:01:26"}]}}
+{"state":"1","results":{"list":[{"type":2,"actualstep":2,"targetstep":1,"turnover":3,"km":"12","calories":"5000","sleeptime":"2014-05-21 00:00:00","waketime":"2014-05-22 00:00:00","wakenum":8,"lightsleep":1.8,"deepsleep":1.45,"createDate":"2014-05-22 00:01:26"},"endDate":"2014-05-22 00:11:26"}]}}
 
 10 忘记密码时获取密码
 http://127.0.0.1:9000/c/resetpassword?m=13838389436
@@ -115,12 +117,82 @@ http://127.0.0.1:9000/c/changePassword?oldPassword=321&newPassword=098765&z=d359
 (必须)newPassword:新密码
 (必须)z
 
-14 绑定、更改产品
-http://127.0.0.1:9000/c/setUserWatch?imei=3212332&rId=&p_name=m26&nickname=%E6%B5%8B%E8%AF%95&m_number=150099878767&guardian_number=1231234432&z=6335f91d-372e-4c19-9f5f-a9ec022fe513
-(必须)imei:产品IMEI 新增产品为必填项
-(必须)rId:已绑定产品ID 更改已有产品时为必填项
-p_name:产品名称  M26 M28
-nickname:产品昵称
+
+14 绑定手表
+http://127.0.0.1:9000/c/bindingWatch?sn=3212332&rId=&m_number=150099878767
+(必须)sn:产品标识号
 m_number:sim卡电话号码
-guardian_number=监护人电话号码
+
+手表被app绑定后才能定位手表位置
+
+返回
+{"state":"1","results":{}}
+
+15 解绑手表
+http://127.0.0.1:9000/c/unbindingWatch?sn=3212332&rId=&m_number=150099878767
+(必须)sn:产品标识号
+m_number:sim卡电话号码
+
+手表解除绑定后不能定位
+
+返回
+{"state":"1","results":{}}
+
+16 设置手表信息和亲情号码
+http://127.0.0.1:9000/c/setWatchInfo?rId=1&nickname=%E6%B5%8B%E8%AF%95&guardian_number1=1231234432&guardian_number2=1231234432&guardian_number3=1231234432&guardian_number4=1231234432&z=6335f91d-372e-4c19-9f5f-a9ec022fe513
+(必须)rId:已绑定产品ID
+nickname:产品昵称
+guardian_number1=监护人电话号码1
+guardian_number2=监护人电话号码2
+guardian_number3=监护人电话号码3
+guardian_number4=监护人电话号码4
 (必须)z
+
+返回
+{"state":"1","results":{}}
+
+
+17 APP获得手表信息
+http://127.0.0.1:9000/c/watchList?z=6335f91d-372e-4c19-9f5f-a9ec022fe513
+获得该手机绑定的所有手表信息
+
+返回
+{"state":"1","results":{"count":3,"list":[{"rId":1,"sn":312321321,"m_number":15000001111,"confirmed":1,"guardian_number1":15000002222,"guardian_number2":15000002222,"guardian_number3":15000002223,"guardian_number4":15000002224,"nickname":"军伟","p_name":"M26","bindDate":"2014-11-03 22:00:00","electronicFence_lat":,"1232.11","electronicFence_lon":,"12432.11","electronicFence_radius",100,"electronicFence_datetime","2014-11-03 22:00:00","electronicFence_status",0},{},{}]}
+
+count:绑定手表个数
+rId:手表ID
+sn:产品识别号
+m_number:手表电话号
+confirmed:是否被激活
+guardian_number1-4:亲情号码1-4
+nickname:昵称
+p_name:手表型号
+bindDate:绑定日期
+electronicFence_lat:电子围栏纬度
+electronicFence_lon:电子围栏经度
+electronicFence_radius:电子围栏半径
+electronicFence_datetime:电子围栏设置日期
+electronicFence_status:电子围栏是否被开启 0:关闭 1:开启
+
+
+18 手表发送GPS信息
+http://127.0.0.1:9000/c/sendGPS?data=MjN8MTU3NDM4NXwyMDE0MTAwMTEwMTAxMHwxMjM0LjUyMjZ8MXwxMjM0LjUyMjZ8MXwxMDB8MTMyfDE2fDQ2MHwxfDg5fDIyMDZ8ODg=&rId=20
+
+原始格式
+23|1574385|20141001101010|1234.5226|1|1234.5226|1|100|132|16|460|1|89|2206|AC|1|88
+转为Base64
+MjN8MTU3NDM4NXwyMDE0MTAwMTEwMTAxMHwxMjM0LjUyMjZ8MXwxMjM0LjUyMjZ8MXwxMDB8MTMyfDE2fDQ2MHwxfDg5fDIyMDZ8QUN8MXw4OA==
+
+23  |1574385       |28            |20141001101010           |1234.5226          |1            |1234.5226            |1             |100                 |132                                     |16    |460|1  |89     |2206|AC     |1 |88
+随机 sn(产品识别号) rt(产品型号)   datetime(yyyyMMddHHmmss)  latitude(ddmm.mmmm) latitudeFlag  longitude(ddmm.mmmm)  longitudeFlag  speed(0.0 至 1851.8) direction(相对位移方向，000.0至359.9度)  status mcc mnc cellid  lac  signal1 ta 随即
+
+data:GPS数据
+rId:从服务器得到的手表id
+
+19 APP获得GPS数据
+http://127.0.0.1:9000/c/searchLocation?rId=1&num=55&z=6335f91d-372e-4c19-9f5f-a9ec022fe513
+
+(必须)rId:手表ID
+num:从服务器获得多少条数据，如果不传默认获得1条
+
+{"state":"1","results":{}}

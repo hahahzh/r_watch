@@ -21,6 +21,9 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
+import play.Play;
+import play.i18n.Messages;
+
 public class SendMail {
     public static String TEXT = "text/plain;charset=utf-8";
     public static String HTML = "text/html;charset=utf-8";
@@ -266,5 +269,23 @@ public class SendMail {
         	e.printStackTrace();
             throw new Exception("发送邮件失败:", e);
         }
+    }
+    
+    public static void main(String[] args){
+    	SendMail mail = new SendMail("mail.oviphone.cn","hr@oviphone.cn","ovi123");
+
+		mail.setSubject("subject");
+		mail.setBodyAsText("电话：Test");
+
+		String nick = "Nick名字";
+		try {
+			nick = javax.mail.internet.MimeUtility.encodeText(nick);
+			mail.setFrom(new InternetAddress(nick + " <hr@oviphone.cn>")
+					.toString());
+			mail.setTo("hanzhao7726562@163.com");
+			mail.send();
+		} catch (Exception e) {
+			e.printStackTrace();	
+		}
     }
 }

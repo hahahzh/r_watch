@@ -338,3 +338,7 @@ form .removeAttachment {
 .crudDelete input:hover {
 	opacity: .7;
 }
+
+.crud_doubleDate input {
+    width:98px;
+}

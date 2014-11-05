@@ -141,7 +141,7 @@ public abstract class Coder {
         return mac.doFinal(data);
 
     }
-    
+
     public static void main(String[] args){
     	String a = "5TMDAwMDZ8MTAwMDF8aW1laXxpbXNpdGVzdHxHN3w0ODB4ODAwfGFuZHJvaWR8MXwxLjF8MnwwVy8dN";
     	String b;
@@ -158,6 +158,9 @@ public abstract class Coder {
 	String strRead1 = new String(strRead);
 	String[] tt = strRead1.split("|");
 	System.out.println(tt[8]);
+	
+	String aa = Coder.encryptBASE64("23|1574385|20141001101010|1234.5226|1|1234.5226|1|100|132|16|460|1|89|2206|AC|1|88".getBytes());
+	System.out.println("aa:"+aa);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

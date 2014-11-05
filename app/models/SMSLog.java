@@ -14,7 +14,7 @@ import play.db.jpa.Model;
 public class SMSLog extends Model {
 
 	@Required
-	@MaxSize(500)
+	@MaxSize(70)
 	public String content;
 	
 	public String phoneNos;

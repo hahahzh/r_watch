@@ -9,6 +9,7 @@ import play.exceptions.TemplateNotFoundException;
 import play.mvc.With;
 import utils.DateUtil;
 import utils.SendSMS;
+import utils.StringUtil;
 
 @Check("admin")
 @With(Secure.class)
@@ -22,13 +23,22 @@ public class SMSLogs extends CRUD {
         SMSLog object = new SMSLog();
         object.content = params.get("content");
         String mobiles = "";
-        for(String tmp : params.getAll("selMobile")){
-        	mobiles += tmp+",";
+        String wMobile = params.get("wMobile").trim();
+        String[] phoneNos;
+        if(StringUtil.isEmpty(wMobile)){
+        	phoneNos = params.getAll("selMobile");
+        	for(String tmp : phoneNos){
+            	mobiles += tmp+",";
+            }
+        }else{
+        	phoneNos = wMobile.split(",");
+        	mobiles = wMobile.trim();
         }
+        
         object.phoneNos = mobiles;
         validation.valid(object);
         
-        int[] flags = SendSMS.sendMsg(params.getAll("selMobile"), object.content);
+        boolean flag = SendSMS.sendMsg(phoneNos, object.content);
         
         object.updatetime = DateUtil.reverseDate(new Date(), 0);
         if (validation.hasErrors()) {

@@ -65,8 +65,10 @@ public class Customer extends Model {
 	public Byte gender;
 	
 	@Email
+	@Index(name = "idx_email")
 	public String email;
 	
+	@Index(name = "idx_weixin")
 	public String weixin;
 	
 	public String city;
@@ -76,6 +78,8 @@ public class Customer extends Model {
 	public String height;
 	
 	public String weight;
+	
+	public String step;
 	
 	public Blob portrait;
 	

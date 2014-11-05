@@ -22,6 +22,10 @@ public class Sessions extends CRUD {
         if (page < 1) {
             page = 1;
         }
+        if(orderBy == null && orderBy == null){
+        	orderBy = "loginUpdatetime";
+        	order = "DESC";
+        }
         List<Model> objects = type.findPage(page, search, searchFields, orderBy, order, (String) request.args.get("where"));
         Long count = type.count(search, searchFields, (String) request.args.get("where"));
         Long totalCount = type.count(null, null, (String) request.args.get("where"));

@@ -36,9 +36,9 @@ public class HealthRecord extends Model {
 	
 	public Date waketime;
 	
-	public float deepsleep;
+	public Integer deepsleep;
 	
-	public float shallowsleep;
+	public Integer lightsleep;
 	
 	public float actiontime;
 	
@@ -48,7 +48,9 @@ public class HealthRecord extends Model {
 	
 	public Integer heartrate;
 	
-	public Date createDate;
+	public Date sports_start_time;
+	
+	public Date sports_end_time;
 	
 	@Required
 	@ManyToOne(fetch=FetchType.LAZY,cascade=javax.persistence.CascadeType.REFRESH)

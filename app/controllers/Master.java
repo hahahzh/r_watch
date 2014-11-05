@@ -1,6 +1,7 @@
 package controllers;
 
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -231,10 +232,11 @@ public class Master extends Controller {
 			s = new Session();
 			s.c = c;
 			s.sessionID = UUID.randomUUID().toString();
-			s.loginUpdatetime = new Date();
 			s.nickname = c.nickname;
-			s._save();
 		}
+		s.loginUpdatetime = new Date();
+		s._save();
+		
 		c.updatetime = new Date();
 		c.os = os;
 		c._save();
@@ -298,14 +300,14 @@ public class Master extends Controller {
 			if(c == null)c = Customer.find("byWeixin", m).first();
 			if(c == null)renderFail("error_username_not_exist");
 		}
-
+		
 		SendMail mail = new SendMail(
 				Play.configuration.getProperty("mail.smtp.host"),
 				Play.configuration.getProperty("mail.smtp.user"),
 				Play.configuration.getProperty("mail.smtp.pass"));
 
 		mail.setSubject(Messages.get("mail_resetpassword_title"));
-		mail.setBodyAsText("电话："+c.m_number+" 密码："+c.pwd);
+		mail.setBodyAsText("phone:"+c.m_number+"password:"+c.pwd);
 
 		String nick = Messages.get("mail_show_name");
 		try {
@@ -324,7 +326,7 @@ public class Master extends Controller {
 
 	//更新用户信息
 	public static void updateMemberInfo(Integer os, String nickname, String pwd, String gender, String email, 
-			String city, Date birthday, String height, String weight, String weixin, Blob portrait, @Required String z) {
+			String city, Date birthday, String height, String weight, String weixin, String step, Blob portrait, @Required String z) {
 
 		// ....
 		if (Validation.hasErrors()) {
@@ -364,6 +366,9 @@ public class Master extends Controller {
 		if(!StringUtil.isEmpty(weixin)){
 			c.weixin = weixin;
 		}
+		if(!StringUtil.isEmpty(step)){
+			c.step = step;
+		}
 		if(portrait != null){
 			if(c.portrait.exists()){
 				c.portrait.getFile().delete();
@@ -397,6 +402,7 @@ public class Master extends Controller {
 		results.put("city", c.city);
 		results.put("height", c.height);
 		results.put("weight", c.weight);
+		results.put("step", c.step);
 		results.put("weixin", c.weixin);
 		results.put("birthday", DateUtil.reverseDate(c.birthday,1));
 		
@@ -414,8 +420,8 @@ public class Master extends Controller {
 	
 	public static void setMemberRecord(@Required Integer type, Integer actualstep, Integer targetstep, 
 			Integer turnover, String km, String calories, String sleeptime, String waketime, Integer wakenum, 
-			Integer heartrate, Integer high, Float deepsleep, Float shallowsleep, Float actiontime, 
-			@Required String createDate, @Required String z) {
+			Integer heartrate, Integer high, Integer deepsleep, Integer lightsleep, Float actiontime, 
+			String sports_start_time, String sports_end_time, @Required String z) {
 		
 		if (Validation.hasErrors()) {
 			renderFail("error_parameter_required");
@@ -462,48 +468,77 @@ public class Master extends Controller {
 		if(deepsleep != null){
 			hr.deepsleep = deepsleep;
 		}
-		if(shallowsleep != null){
-			hr.shallowsleep = shallowsleep;
+		if(lightsleep != null){
+			hr.lightsleep = lightsleep;
 		}
 		if(actiontime != null){
 			hr.actiontime = actiontime;
 		}
-		hr.createDate = DateUtil.reverse2Date(createDate);
+		if(sports_start_time != null){
+			hr.sports_start_time = DateUtil.reverse2Date(sports_start_time);
+		}
+		if(sports_end_time != null){
+			hr.sports_end_time = DateUtil.reverse2Date(sports_end_time);
+		}
 		hr._save();
 		renderSuccess(initResultJSON());
 	}
 	
-	public static void getMemberRecords(@Required String z) {
-		
+	public static void getMemberRecords(String startDate, String endDate, String sleepTime, String wakeTime, @Required String z) {
+
 		if (Validation.hasErrors()) {
-			renderFail("error_parameter_required");
+		        renderFail("error_parameter_required");
 		}
 		
 		Session s = sessionCache.get();
 		if(s == null){
-			renderFail("error_session_expired");
+		        renderFail("error_session_expired");
 		}
 		
 		Customer c = s.c;
 		JSONObject results = initResultJSON();
 		JSONArray datalist = initResultJSONArray();
-		List<HealthRecord> ls = HealthRecord.find("c_id=?", c.id).fetch(100);
+		String tmpSQL = "";
+		if(!StringUtil.isEmpty(startDate)){
+		        tmpSQL = " and sports_start_time > '" + startDate + "'";
+		}
+		if(!StringUtil.isEmpty(endDate)){
+		        tmpSQL += " and sports_end_time < '" + endDate + "'";
+		}
+		if(!StringUtil.isEmpty(sleepTime)){
+		    tmpSQL = " and sleeptime > '" + sleepTime + "'";
+		}
+		if(!StringUtil.isEmpty(wakeTime)){
+		    tmpSQL += " and waketime < '" + wakeTime + "'";
+		}
+		List<HealthRecord> ls = HealthRecord.find("c_id = ? " + tmpSQL, c.id).fetch(100);
 		for(HealthRecord hr : ls){
-			JSONObject data = initResultJSON();
-			data.put("type", hr.type);
-			data.put("actualstep", hr.actualstep);
-			data.put("targetstep", hr.targetstep);
-			data.put("turnover", hr.turnover);
-			data.put("km", hr.km);
-			data.put("calories", hr.calories);
-			data.put("sleeptime", DateUtil.reverseDate(hr.sleeptime,0));
-			data.put("waketime", DateUtil.reverseDate(hr.waketime,0));
-			data.put("wakenum", hr.wakenum);
-			data.put("deepsleep", hr.deepsleep);
-			data.put("shallowsleep", hr.shallowsleep);
-			data.put("actiontime", hr.actiontime);
-			data.put("createDate", DateUtil.reverseDate(hr.createDate, 0));
-			datalist.add(data);
+		    JSONObject data = initResultJSON();
+		    data.put("type", hr.type);
+		    data.put("actualstep", hr.actualstep);
+		    data.put("targetstep", hr.targetstep);
+		    data.put("turnover", hr.turnover);
+		    data.put("km", hr.km);
+		    data.put("calories", hr.calories);
+		    if(hr.sleeptime != null){
+		    	data.put("sleeptime", DateUtil.reverseDate(hr.sleeptime,0));
+		    }
+		    if(hr.waketime != null){
+		    	data.put("waketime", DateUtil.reverseDate(hr.waketime,0));
+		    }
+		    data.put("wakenum", hr.wakenum);
+		    data.put("deepsleep", hr.deepsleep);
+		    data.put("lightsleep", hr.lightsleep);
+		    data.put("actiontime", hr.actiontime);
+		    data.put("high", hr.high);
+		    data.put("heartrate", hr.heartrate);
+		    if(hr.sports_start_time != null){
+		    	data.put("sports_start_time", DateUtil.reverseDate(hr.sports_start_time, 0));
+		    }
+		    if(hr.sports_end_time != null){
+		    	data.put("sports_end_time", DateUtil.reverseDate(hr.sports_end_time, 0));
+		    }
+		    datalist.add(data);
 		}
 		results.put("list", datalist);
 		renderSuccess(results);

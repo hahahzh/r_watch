@@ -25,7 +25,13 @@ public class RWatch extends Model {
 	
 	public String m_number;
 	
-	public String guardian_number;
+	public String guardian_number1;
+	
+	public String guardian_number2;
+	
+	public String guardian_number3;
+	
+	public String guardian_number4;
 	
 	public String nickname;
 	

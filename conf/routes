@@ -25,6 +25,8 @@ GET     /favicon.ico                            404
 # Map static resources from the /app/public folder to the /public path
 GET     /public/                                staticDir:public
 GET     /attachments/                      		staticDir:data/attachments
+GET     /android/                      			staticDir:data/android
+GET     /ios/                      				staticDir:data/ios
 
 # Catch all
 *       /{controller}/{action}                  {controller}.{action}
